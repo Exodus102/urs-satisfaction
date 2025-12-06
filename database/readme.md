@@ -1,0 +1,1 @@
+dito mo upload yung database yung db_css
