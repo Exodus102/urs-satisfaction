@@ -8,9 +8,20 @@ session_start();
 
 // --- Database Configuration ---
 require_once '../../function/_databaseConfig/_dbConfig.php';
-// --- Resend Mailer Configuration ---
-require_once __DIR__ . '/../../vendor/autoload.php'; // Composer autoloader
-require_once __DIR__ . '/../_config/resend_config.php';
+// --- Composer Autoloader and Environment Variables ---
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
+$dotenv->load();
+
+
+// --- PHPMailer Configuration ---
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require '../../PHPMailer/vendor/phpmailer/phpmailer/src/Exception.php';
+require '../../PHPMailer/vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require '../../PHPMailer/vendor/phpmailer/phpmailer/src/SMTP.php';
 
 // Check if the email is available in the session. If not, redirect.
 if (!isset($_SESSION['login_username'])) {
@@ -106,10 +117,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $insertStmt = $pdo->prepare("INSERT INTO two_factor_codes (user_id, code, expires_at) VALUES (?, ?, ?)");
         $insertStmt->execute([$user_id, $verificationCode, $expiresAt]);
 
-        // --- Send email using Resend ---
+        // --- Send email using PHPMailer ---
         try {
-          $resend = Resend::client(RESEND_API_KEY);
+          $mail = new PHPMailer(true);
 
+          //Server settings
+          $mail->isSMTP();
+          $mail->Host       = 'smtp.gmail.com';
+          $mail->SMTPAuth   = true;
+          $mail->Username   = $_ENV['GMAIL_USERNAME']; // Your Gmail address from .env
+          $mail->Password   = $_ENV['GMAIL_APP_PASSWORD']; // Your Gmail App Password from .env
+          $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+          $mail->Port       = 587;
           $htmlBody = "
 <!DOCTYPE html>
 <html>
@@ -189,13 +208,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </html>
 "; // The HTML body from your original code
 
-          $resend->emails->send([
-            'from' => MAIL_FROM_NAME . ' <' . MAIL_FROM_ADDRESS . '>',
-            'to' => [$user_email],
-            'subject' => 'Your 2-Step Verification Code',
-            'html' => $htmlBody,
-            'text' => "Hello {$user_first_name}, Your verification code is: {$verificationCode}. This code is valid for 10 minutes."
-          ]);
+          //Recipients
+          $mail->setFrom('ursmain@urs.edu.ph', 'Customer Satisfaction Survey System');
+          $mail->addAddress($user_email, $user_first_name . ' ' . $user_last_name);
+
+          //Content
+          $mail->isHTML(true);
+          $mail->Subject = 'Your 2-Step Verification Code';
+          $mail->Body    = $htmlBody;
+          $mail->AltBody = "Hello {$user_first_name}, Your verification code is: {$verificationCode}. This code is valid for 10 minutes.";
+          $mail->send();
 
           // Session for verification
           $_SESSION['user_authenticated_pending'] = true;
@@ -216,10 +238,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           header("Location: ../../pages/login/two-factor-authentication.php");
           exit();
         } catch (\Exception $e) {
-          $_SESSION['login_error'] = "Could not send verification email: " . $e->getMessage();
+          $_SESSION['login_error'] = "Could not send verification email. Mailer Error: {$mail->ErrorInfo}";
           // 🔧 write session & log
           session_write_close();
-          error_log("[getPassword] Resend API error for {$email_from_session}: " . $e->getMessage());
+          error_log("[getPassword] PHPMailer error for {$email_from_session}: " . $mail->ErrorInfo);
           header("Location: ../../pages/login/password.php");
           exit();
         }

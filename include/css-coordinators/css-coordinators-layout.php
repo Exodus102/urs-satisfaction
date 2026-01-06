@@ -73,7 +73,7 @@ if (strtolower($page_title) === 'qr code') $page_title = 'QR Code';
             }
         });
     </script>
-    <?php include '../../JavaScript/autoLogout/idleLogOut.php'; ?>
+    
 </body>
 
 </html>

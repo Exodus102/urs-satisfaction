@@ -76,7 +76,7 @@ if (strtolower($page_title) === 'qr code') $page_title = 'QR Code';
             }
         });
     </script>
-   
+    
 </body>
 
 </html>

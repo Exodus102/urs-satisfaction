@@ -25,6 +25,15 @@
         const addResponseDialog = document.getElementById('add-response-dialog');
         const cancelAddResponseBtn = document.getElementById('cancel-add-response');
         const addResponseForm = document.getElementById('add-response-form');
+        const addNewRowBtn = document.getElementById('add-new-response-row');
+
+        // --- Sentiment Details Logic ---
+        const dataResponseListContainer = document.getElementById('data-response-list-container');
+        const sentimentReportContainer = document.getElementById('sentiment-report-container');
+        const sentimentReportContent = document.getElementById('sentiment-report-content');
+        const backToResponseListBtn = document.getElementById('back-to-response-list-btn');
+        const downloadReportBtn = document.getElementById('download-report-btn');
+        const reportSubtitle = document.getElementById('report-subtitle');
 
         // --- Event Listeners ---
         document.querySelectorAll('#data-response-filters-form select').forEach(select => {
@@ -186,7 +195,6 @@
         }
 
         // --- Add New Row for Response ---
-        const addNewRowBtn = document.getElementById('add-new-response-row');
         if (addNewRowBtn) {
             addNewRowBtn.addEventListener('click', () => {
                 const tableBody = document.getElementById('add-response-body');
@@ -253,6 +261,78 @@
                     alert('An error occurred while saving the responses. Please check the console.');
                     console.error('Add Response Error:', error);
                 }
+            });
+        }
+
+        // --- Sentiment Details Event Listeners ---
+        const responseTableBody = document.getElementById('response-table-body');
+        if (responseTableBody) {
+            responseTableBody.addEventListener('click', async (e) => {
+                if (e.target.closest('.view-sentiment-btn')) {
+                    const button = e.target.closest('.view-sentiment-btn');
+                    const responseId = button.dataset.responseId;
+
+                    button.disabled = true;
+                    button.innerHTML = 'Generating...';
+
+                    try {
+                        const response = await fetch(`../../pages/data-response/generate-sentiment-report.php?response_id=${responseId}`);
+
+                        const text = await response.text();
+                        let result;
+                        try {
+                            result = JSON.parse(text);
+                        } catch (e) {
+                            // If parsing fails, check if it was a server error
+                            if (!response.ok) {
+                                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                            }
+                            throw new Error('Invalid JSON response from server: ' + text.substring(0, 100));
+                        }
+
+                        // If response was not OK, throw the message from the JSON if available
+                        if (!response.ok) {
+                            throw new Error(result.message || `Server error: ${response.status}`);
+                        }
+
+                        if (result.success) {
+                            const pdfPath = `../../${result.filePath}`;
+
+                            // Update Report View
+                            if (reportSubtitle) reportSubtitle.textContent = `Response ID: ${responseId}`;
+                            if (downloadReportBtn) downloadReportBtn.href = pdfPath;
+
+                            sentimentReportContent.innerHTML = `
+                                <object data="${pdfPath}" type="application/pdf" class="w-full h-full rounded-lg">
+                                    <div class="flex items-center justify-center h-full">
+                                        <p class="text-gray-500">Unable to display PDF. <a href="${pdfPath}" target="_blank" class="text-blue-600 hover:underline">Download it here</a>.</p>
+                                    </div>
+                                </object>
+                            `;
+
+                            // Switch Views
+                            if (dataResponseListContainer) dataResponseListContainer.classList.add('hidden');
+                            if (sentimentReportContainer) sentimentReportContainer.classList.remove('hidden');
+                        } else {
+                            alert(result.message || 'Failed to generate report.');
+                        }
+                    } catch (error) {
+                        console.error('Error generating sentiment report:', error);
+                        alert('An error occurred while generating the sentiment report.');
+                    } finally {
+                        button.disabled = false;
+                        button.innerHTML = 'View';
+                    }
+                }
+            });
+        }
+
+        // Back button handler
+        if (backToResponseListBtn) {
+            backToResponseListBtn.addEventListener('click', () => {
+                if (sentimentReportContainer) sentimentReportContainer.classList.add('hidden');
+                if (dataResponseListContainer) dataResponseListContainer.classList.remove('hidden');
+                if (sentimentReportContent) sentimentReportContent.innerHTML = ''; // Clear to stop PDF process
             });
         }
     });

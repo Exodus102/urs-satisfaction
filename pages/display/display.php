@@ -22,7 +22,7 @@
 
     <div class="flex flex-col">
         <div class="flex flex-col lg:flex-row gap-4 mb-4">
-            <div class="p-4 bg-[#F1F7F9] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md lg:w-1/2 w-full">
+            <div class="p-4 bg-[#F1F7F9] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md lg:w-1/3 w-full">
                 <div class="w-3/4 mx-auto">
                     <h3 class="text-lg font-bold">Logo</h3>
                     <button id="change-logo-btn" class="bg-[#D6D7DC] dark:bg-gray-500 dark:text-white border border-[#1E1E1E] dark:border-gray-400 px-2 py-1 rounded shadow-sm text-sm flex items-center h-7 gap-2 mt-2 w-full lg:w-auto">
@@ -31,7 +31,7 @@
                     </button>
                 </div>
             </div>
-            <div class="w-full lg:w-1/2 p-4 bg-[#F1F7F9] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md flex flex-col">
+            <div class="w-full lg:w-1/3 p-4 bg-[#F1F7F9] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md flex flex-col">
                 <div class="flex-grow flex flex-col justify-center">
                     <div class="w-3/4 mx-auto">
                         <h3 class="text-lg font-bold mb-2">Font Size</h3>
@@ -47,7 +47,7 @@
                     </div>
                 </div>
             </div>
-            <!--<div class="w-full lg:w-1/3 p-4 bg-[#F1F7F9] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md flex flex-col">
+            <div class="w-full lg:w-1/3 p-4 bg-[#F1F7F9] dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md flex flex-col">
                 <div class="flex-grow flex flex-col justify-center">
                     <div class="w-3/4 mx-auto">
                         <h3 class="text-lg font-bold mb-2">Theme</h3>
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-            </div>-->
+            </div>
         </div>
     </div>
 </div>

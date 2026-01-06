@@ -8,11 +8,12 @@ $response = ['success' => false, 'message' => 'An error occurred.'];
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Basic validation
     if (
-        isset($_POST['user_id'], $_POST['first_name'], $_POST['last_name'], $_POST['campus'], $_POST['type'], $_POST['email'], $_POST['status']) &&
+        isset($_POST['user_id'], $_POST['first_name'], $_POST['last_name'], $_POST['campus'], $_POST['unit'], $_POST['type'], $_POST['email'], $_POST['status']) &&
         is_numeric($_POST['user_id']) &&
         !empty(trim($_POST['first_name'])) &&
         !empty(trim($_POST['last_name'])) &&
         !empty(trim($_POST['campus'])) &&
+        !empty(trim($_POST['unit'])) &&
         !empty(trim($_POST['type'])) &&
         !empty(trim($_POST['email'])) &&
         !empty(trim($_POST['status']))
@@ -23,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $lastName = trim($_POST['last_name']);
         $contactNumber = isset($_POST['contact_number']) ? trim($_POST['contact_number']) : '';
         $campus = trim($_POST['campus']);
-        $unit = isset($_POST['unit']) ? trim($_POST['unit']) : '';
+        $unit = trim($_POST['unit']);
         $type = trim($_POST['type']);
         $email = trim($_POST['email']);
         $status = trim($_POST['status']);

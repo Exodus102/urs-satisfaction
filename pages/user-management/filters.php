@@ -110,7 +110,7 @@
 
         <div>
             <label for="add-unit" class="block text-sm font-medium text-gray-700">Unit</label>
-            <select id="add-unit" name="unit" class="mt-1 block w-full rounded-md border border-[#1E1E1E] bg-[#E6E7EC] py-1 px-2 h-7 focus:border-blue-500 focus:ring-blue-500">
+            <select id="add-unit" name="unit" class="mt-1 block w-full rounded-md border border-[#1E1E1E] bg-[#E6E7EC] py-1 px-2 h-7 focus:border-blue-500 focus:ring-blue-500" required>
                 <option value="" hidden>Select a campus first</option>
             </select>
         </div>
@@ -196,7 +196,7 @@
 
         <div>
             <label for="edit-unit" class="block text-sm font-medium text-gray-700">Unit</label>
-            <select id="edit-unit" name="unit" class="mt-1 block w-full rounded-md border border-[#1E1E1E] bg-[#E6E7EC] py-1 px-2 h-7 focus:border-blue-500 focus:ring-blue-500">
+            <select id="edit-unit" name="unit" class="mt-1 block w-full rounded-md border border-[#1E1E1E] bg-[#E6E7EC] py-1 px-2 h-7 focus:border-blue-500 focus:ring-blue-500" required>
                 <option value="" hidden>Select a campus first</option>
             </select>
         </div>

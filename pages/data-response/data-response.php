@@ -177,177 +177,204 @@ try {
 }
 ?>
 <div class="p-4 w-full lg:h-full">
-    <script>
-        // Apply saved font size on every page load
-        (function() {
-            const savedSize = localStorage.getItem('user_font_size');
-            if (savedSize) {
-                document.documentElement.style.fontSize = savedSize;
-            }
-        })();
-    </script>
-    <!-- Header -->
-    <div class="mb-6 w-full">
-        <h1 class="text-4xl font-bold text-[#1E1E1E]">Data Responses</h1>
-        <p class="text-[#1E1E1E]">
-            You are viewing the responses from the survey questionnaire currently in use.
-        </p>
-    </div>
-
-    <!-- Filters -->
-    <div class="flex xl:items-end mb-6 w-full justify-between flex-col xl:flex-row gap-4 xl:gap-0">
-        <div class="flex lg:items-end gap-1 lg:flex-row flex-col">
-            <span class="font-semibold text-gray-700">FILTERS:</span>
-            <form id="data-response-filters-form" method="GET" class="flex lg:items-end gap-1 lg:flex-row flex-col">
-                <input type="hidden" name="page" value="data-response">
-                <div class="lg:w-72 w-full">
-                    <label for="filter_division" class="block text-xs font-medium text-[#48494A]">DIVISION</label>
-                    <select name="filter_division" id="filter_division" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
-                        <option value="">All Divisions</option>
-                        <?php foreach ($divisions as $division) : ?>
-                            <option value="<?php echo htmlspecialchars($division['id']); ?>" <?php echo ($filter_division_id == $division['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($division['division_name']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="lg:w-72 w-full">
-                    <label for="filter_unit" class="block text-xs font-medium text-[#48494A]">OFFICE</label>
-                    <select name="filter_unit" id="filter_unit" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
-                        <option value="">All Offices</option>
-                        <?php foreach ($units as $unit) : ?>
-                            <option value="<?php echo htmlspecialchars($unit['id']); ?>" data-division-id="<?php echo htmlspecialchars($unit['division_id'] ?? ''); ?>" <?php echo ($filter_unit_id == $unit['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($unit['unit_name']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <!-- <div class="flex-grow">
-                    <label for="filter_year" class="block text-xs font-medium text-[#48494A]">YEAR</label>
-                    <select name="filter_year" id="filter_year" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
-                        <option value="">All Years</option>
-                        <?php foreach ($years as $year) : ?>
-                            <option value="<?php echo htmlspecialchars($year); ?>" <?php echo ($filter_year == $year) ? 'selected' : ''; ?>><?php echo htmlspecialchars($year); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div> -->
-                <div class="flex-grow">
-                    <label for="filter_quarter" class="block text-xs font-medium text-[#48494A]">QUARTER</label>
-                    <select name="filter_quarter" id="filter_quarter" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
-                        <option value="">All Quarters</option>
-                        <option value="1" <?php echo ($filter_quarter == 1) ? 'selected' : ''; ?>>1st Quarter</option>
-                        <option value="2" <?php echo ($filter_quarter == 2) ? 'selected' : ''; ?>>2nd Quarter</option>
-                        <option value="3" <?php echo ($filter_quarter == 3) ? 'selected' : ''; ?>>3rd Quarter</option>
-                        <option value="4" <?php echo ($filter_quarter == 4) ? 'selected' : ''; ?>>4th Quarter</option>
-                    </select>
-                </div>
-            </form>
+    <div id="data-response-list-container">
+        <script>
+            // Apply saved font size on every page load
+            (function() {
+                const savedSize = localStorage.getItem('user_font_size');
+                if (savedSize) {
+                    document.documentElement.style.fontSize = savedSize;
+                }
+            })();
+        </script>
+        <!-- Header -->
+        <div class="mb-6 w-full">
+            <h1 class="text-4xl font-bold text-[#1E1E1E]">Data Responses</h1>
+            <p class="text-[#1E1E1E]">
+                You are viewing the responses from the survey questionnaire currently in use.
+            </p>
         </div>
 
-        <!--<div class="flex items-center gap-2">
-             Add Response button 
-            <button id="add-response-btn" class="bg-[#D6D7DC] border border-[#1E1E1E] px-4 py-2 rounded shadow-sm text-sm flex items-center h-7">
-                Add Response
-            </button>
-             Upload CSV button 
-            <button id="upload-csv-btn" class="bg-[#D6D7DC] border border-[#1E1E1E] px-4 py-2 rounded shadow-sm text-sm flex items-center h-7">
-                <img src="../../resources/svg/upload-data-window.svg" alt="Upload CSV" class="mr-2">
-                Upload CSV
-            </button>
-        </div> -->
-    </div>
-
-    <!-- Table -->
-    <div class="bg-white border border-gray-300 rounded-lg w-full overflow-x-auto">
-        <table class="border-collapse w-full table-fixed">
-            <thead>
-                <tr class="bg-[#064089] text-[#F1F7F9] text-sm font-semibold">
-                    <th class="px-4 py-2 border border-gray-300 w-16">ID</th>
-                    <th class="px-4 py-2 border border-gray-300 w-40">Timestamp</th>
-                    <th class="px-4 py-2 border border-gray-300 w-32">Campus</th>
-                    <th class="px-4 py-2 border border-gray-300 w-48">Division</th>
-                    <th class="px-4 py-2 border border-gray-300 w-48">Office</th>
-                    <th class="px-4 py-2 border border-gray-300 w-36">Customer Type</th>
-                    <th class="px-4 py-2 border border-gray-300 w-48 truncate">Purpose of Visit</th>
-                    <?php foreach ($active_questions as $question) : ?>
-                        <?php
-                        if ($question['question_id'] == 1) continue;
-                        ?>
-                        <th class="px-4 py-2 border border-gray-300 w-48"><?php echo htmlspecialchars($question['question']); ?>
-                        </th>
-                    <?php endforeach; ?>
-                    <th class="px-4 py-2 border border-gray-300 w-64">Comments & Suggestions</th>
-                    <th class="px-4 py-2 border border-gray-300 w-28">Analysis</th>
-                </tr>
-            </thead>
-            <tbody id="response-table-body">
-                <?php if (empty($grouped_responses)) : ?>
-                    <tr class="no-results-row">
-                        <td colspan="<?php echo count($active_questions) + 7; ?>" class="px-4 py-3 text-center text-gray-500">No responses found.</td>
-                    </tr>
-                <?php else : ?>
-                    <?php foreach ($grouped_responses as $group) : ?>
-                        <?php
-                        $unit_id = $group['unit_id'] ?? null;
-                        $division_id = $group['division_id'] ?? '';
-                        ?>
-                        <tr class="response-row" data-unit-id="<?php echo htmlspecialchars($unit_id); ?>" data-division-id="<?php echo htmlspecialchars($division_id); ?>" data-year="<?php echo date('Y', strtotime($group['timestamp'])); ?>" data-quarter="<?php echo ceil(date('n', strtotime($group['timestamp'])) / 3); ?>">
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['id']); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars(date('m/d/Y H:i:s', strtotime($group['timestamp']))); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['campus'] ?? ''); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['division_name'] ?? ''); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['unit_name'] ?? ''); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['customer_type'] ?? ''); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate">
-                                <?php echo isset($group['responses'][1]) ? htmlspecialchars($group['responses'][1]) : ''; ?>
-                            </td>
-                            <?php foreach ($active_questions as $question) : ?>
-                                <?php if ($question['question_id'] == 1) continue; ?>
-                                <td class="px-4 py-2 border border-gray-300 text-center truncate">
-                                    <?php echo isset($group['responses'][$question['question_id']]) ? htmlspecialchars($group['responses'][$question['question_id']]) : ''; ?>
-                                </td>
+        <!-- Filters -->
+        <div class="flex xl:items-end mb-6 w-full justify-between flex-col xl:flex-row gap-4 xl:gap-0">
+            <div class="flex lg:items-end gap-1 lg:flex-row flex-col">
+                <span class="font-semibold text-gray-700">FILTERS:</span>
+                <form id="data-response-filters-form" method="GET" class="flex lg:items-end gap-1 lg:flex-row flex-col">
+                    <input type="hidden" name="page" value="data-response">
+                    <div class="lg:w-72 w-full">
+                        <label for="filter_division" class="block text-xs font-medium text-[#48494A]">DIVISION</label>
+                        <select name="filter_division" id="filter_division" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
+                            <option value="">All Divisions</option>
+                            <?php foreach ($divisions as $division) : ?>
+                                <option value="<?php echo htmlspecialchars($division['id']); ?>" <?php echo ($filter_division_id == $division['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($division['division_name']); ?></option>
                             <?php endforeach; ?>
-                            <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['comment']); ?></td>
-                            <td class="px-4 py-2 border border-gray-300 text-center">
-                                <?php
-                                $analysis = htmlspecialchars($group['analysis']);
-                                $colorClass = 'bg-gray-400'; // Neutral/Default
-                                if ($analysis === 'Positive' || $analysis === 'positive') $colorClass = 'bg-green-500';
-                                if ($analysis === 'Negative' || $analysis === 'negative') $colorClass = 'bg-red-500';
-                                ?>
-                                <span class="px-3 py-1 text-sm font-medium rounded-full <?php echo $colorClass; ?> text-white">
-                                    <?php echo $analysis; ?>
-                                </span>
-                            </td>
+                        </select>
+                    </div>
+                    <div class="lg:w-72 w-full">
+                        <label for="filter_unit" class="block text-xs font-medium text-[#48494A]">OFFICE</label>
+                        <select name="filter_unit" id="filter_unit" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
+                            <option value="">All Offices</option>
+                            <?php foreach ($units as $unit) : ?>
+                                <option value="<?php echo htmlspecialchars($unit['id']); ?>" data-division-id="<?php echo htmlspecialchars($unit['division_id'] ?? ''); ?>" <?php echo ($filter_unit_id == $unit['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($unit['unit_name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <!-- <div class="flex-grow">
+                        <label for="filter_year" class="block text-xs font-medium text-[#48494A]">YEAR</label>
+                        <select name="filter_year" id="filter_year" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
+                            <option value="">All Years</option>
+                            <?php foreach ($years as $year) : ?>
+                                <option value="<?php echo htmlspecialchars($year); ?>" <?php echo ($filter_year == $year) ? 'selected' : ''; ?>><?php echo htmlspecialchars($year); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div> -->
+                    <div class="flex-grow">
+                        <label for="filter_quarter" class="block text-xs font-medium text-[#48494A]">QUARTER</label>
+                        <select name="filter_quarter" id="filter_quarter" class="border border-[#1E1E1E] py-1 px-2 rounded w-full bg-[#E6E7EC] font-bold">
+                            <option value="">All Quarters</option>
+                            <option value="1" <?php echo ($filter_quarter == 1) ? 'selected' : ''; ?>>1st Quarter</option>
+                            <option value="2" <?php echo ($filter_quarter == 2) ? 'selected' : ''; ?>>2nd Quarter</option>
+                            <option value="3" <?php echo ($filter_quarter == 3) ? 'selected' : ''; ?>>3rd Quarter</option>
+                            <option value="4" <?php echo ($filter_quarter == 4) ? 'selected' : ''; ?>>4th Quarter</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!--<div class="flex items-center gap-2">
+                <button id="add-response-btn" class="bg-[#D6D7DC] border border-[#1E1E1E] px-4 py-2 rounded shadow-sm text-sm flex items-center h-7">
+                    Add Response
+                </button>
+                <button id="upload-csv-btn" class="bg-[#D6D7DC] border border-[#1E1E1E] px-4 py-2 rounded shadow-sm text-sm flex items-center h-7">
+                    <img src="../../resources/svg/upload-data-window.svg" alt="Upload CSV" class="mr-2">
+                    Upload CSV
+                </button>
+            </div> -->
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white border border-gray-300 rounded-lg w-full overflow-x-auto">
+            <table class="border-collapse w-full table-fixed">
+                <thead>
+                    <tr class="bg-[#064089] text-[#F1F7F9] text-sm font-semibold">
+                        <th class="px-4 py-2 border border-gray-300 w-16">ID</th>
+                        <th class="px-4 py-2 border border-gray-300 w-40">Timestamp</th>
+                        <th class="px-4 py-2 border border-gray-300 w-32">Campus</th>
+                        <th class="px-4 py-2 border border-gray-300 w-48">Division</th>
+                        <th class="px-4 py-2 border border-gray-300 w-48">Office</th>
+                        <th class="px-4 py-2 border border-gray-300 w-36">Customer Type</th>
+                        <th class="px-4 py-2 border border-gray-300 w-48 truncate">Purpose of Visit</th>
+                        <?php foreach ($active_questions as $question) : ?>
+                            <?php
+                            if ($question['question_id'] == 1) continue;
+                            ?>
+                            <th class="px-4 py-2 border border-gray-300 w-48"><?php echo htmlspecialchars($question['question']); ?>
+                            </th>
+                        <?php endforeach; ?>
+                        <th class="px-4 py-2 border border-gray-300 w-64">Comments & Suggestions</th>
+                        <th class="px-4 py-2 border border-gray-300 w-28">Analysis</th>
+                        <!-- <th class="px-4 py-2 border border-gray-300 w-28">Action</th>-->
+                    </tr>
+                </thead>
+                <tbody id="response-table-body">
+                    <?php if (empty($grouped_responses)) : ?>
+                        <tr class="no-results-row">
+                            <td colspan="<?php echo count($active_questions) + 8; ?>" class="px-4 py-3 border border-gray-300 text-center text-gray-500">No responses found.</td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-                <tr class="no-results-row" style="display: none;">
-                    <td colspan="<?php echo count($active_questions) + 7; ?>" class="px-4 py-3 border border-gray-300 text-center text-gray-500">No matching responses found.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                    <?php else : ?>
+                        <?php foreach ($grouped_responses as $group) : ?>
+                            <?php
+                            $unit_id = $group['unit_id'] ?? null;
+                            $division_id = $group['division_id'] ?? '';
+                            ?>
+                            <tr class="response-row" data-unit-id="<?php echo htmlspecialchars($unit_id); ?>" data-division-id="<?php echo htmlspecialchars($division_id); ?>" data-year="<?php echo date('Y', strtotime($group['timestamp'])); ?>" data-quarter="<?php echo ceil(date('n', strtotime($group['timestamp'])) / 3); ?>">
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['id']); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars(date('m/d/Y H:i:s', strtotime($group['timestamp']))); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['campus'] ?? ''); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['division_name'] ?? ''); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['unit_name'] ?? ''); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['customer_type'] ?? ''); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate">
+                                    <?php echo isset($group['responses'][1]) ? htmlspecialchars($group['responses'][1]) : ''; ?>
+                                </td>
+                                <?php foreach ($active_questions as $question) : ?>
+                                    <?php if ($question['question_id'] == 1) continue; ?>
+                                    <td class="px-4 py-2 border border-gray-300 text-center truncate">
+                                        <?php echo isset($group['responses'][$question['question_id']]) ? htmlspecialchars($group['responses'][$question['question_id']]) : ''; ?>
+                                    </td>
+                                <?php endforeach; ?>
+                                <td class="px-4 py-2 border border-gray-300 text-center truncate"><?php echo htmlspecialchars($group['comment']); ?></td>
+                                <td class="px-4 py-2 border border-gray-300 text-center">
+                                    <?php
+                                    $analysis = htmlspecialchars($group['analysis']);
+                                    $colorClass = 'bg-gray-400'; // Neutral/Default
+                                    if ($analysis === 'Positive' || $analysis === 'positive') $colorClass = 'bg-green-500';
+                                    if ($analysis === 'Negative' || $analysis === 'negative') $colorClass = 'bg-red-500';
+                                    ?>
+                                    <span class="px-3 py-1 text-sm font-medium rounded-full <?php echo $colorClass; ?> text-white">
+                                        <?php echo $analysis; ?>
+                                    </span>
+                                </td>
+                                <!-- <td class="px-4 py-2 border border-gray-300 text-center">
+                                    <button class="view-sentiment-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-blue-200" data-response-id="<?php echo htmlspecialchars($group['id']); ?>">
+                                        View
+                                    </button>
+                                </td> -->
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    <tr class="no-results-row" style="display: none;">
+                        <td colspan="<?php echo count($active_questions) + 8; ?>" class="px-4 py-3 border border-gray-300 text-center text-gray-500">No matching responses found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
 
-    <!-- Pagination -->
-    <div class="flex items-end gap-4 mt-4 text-sm">
-        <!-- Previous -->
-        <a href="?page=data-response&data_page=<?php echo max(1, $current_page - 1); ?>&<?php echo http_build_query(compact('filter_division_id', 'filter_unit_id', 'filter_year', 'filter_quarter')); ?>" id="pagination-prev" class="border border-[#1E1E1E] py-1 px-3 rounded bg-[#E6E7EC] <?php echo $current_page <= 1 ? 'text-gray-400 pointer-events-none' : 'text-gray-700'; ?>">
-            &lt; Previous
-        </a>
+        <!-- Pagination -->
+        <div class="flex items-end gap-4 mt-4 text-sm">
+            <!-- Previous -->
+            <a href="?page=data-response&data_page=<?php echo max(1, $current_page - 1); ?>&<?php echo http_build_query(compact('filter_division_id', 'filter_unit_id', 'filter_year', 'filter_quarter')); ?>" id="pagination-prev" class="border border-[#1E1E1E] py-1 px-3 rounded bg-[#E6E7EC] <?php echo $current_page <= 1 ? 'text-gray-400 pointer-events-none' : 'text-gray-700'; ?>">
+                &lt; Previous
+            </a>
 
-        <!-- Current Page -->
-        <div>
-            <span id="pagination-current-page" class="inline-block text-center border border-[#1E1E1E] py-1 px-4 rounded bg-white">
-                <?php echo $current_page; ?>
+            <!-- Current Page -->
+            <div>
+                <span id="pagination-current-page" class="inline-block text-center border border-[#1E1E1E] py-1 px-4 rounded bg-white">
+                    <?php echo $current_page; ?>
+                </span>
+            </div>
+
+            <!-- Next -->
+            <a href="?page=data-response&data_page=<?php echo min($total_pages, $current_page + 1); ?>&<?php echo http_build_query(compact('filter_division_id', 'filter_unit_id', 'filter_year', 'filter_quarter')); ?>" id="pagination-next" class="border border-[#1E1E1E] py-1 px-3 rounded bg-[#E6E7EC] <?php echo $current_page >= $total_pages ? 'text-gray-400 pointer-events-none' : 'text-gray-700'; ?>">
+                Next Page &gt;
+            </a>
+
+            <span class="ml-4 text-gray-600">
+                Page <?php echo $current_page; ?> of <?php echo $total_pages; ?> (Total: <?php echo $total_responses; ?> responses)
             </span>
         </div>
+    </div>
 
-        <!-- Next -->
-        <a href="?page=data-response&data_page=<?php echo min($total_pages, $current_page + 1); ?>&<?php echo http_build_query(compact('filter_division_id', 'filter_unit_id', 'filter_year', 'filter_quarter')); ?>" id="pagination-next" class="border border-[#1E1E1E] py-1 px-3 rounded bg-[#E6E7EC] <?php echo $current_page >= $total_pages ? 'text-gray-400 pointer-events-none' : 'text-gray-700'; ?>">
-            Next Page &gt;
-        </a>
-
-        <span class="ml-4 text-gray-600">
-            Page <?php echo $current_page; ?> of <?php echo $total_pages; ?> (Total: <?php echo $total_responses; ?> responses)
-        </span>
+    <!-- PDF Viewer Container -->
+    <div id="sentiment-report-container" class="hidden h-full flex flex-col">
+        <div class="mb-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <button id="back-to-response-list-btn" class="mr-4 hover:bg-gray-200 rounded-full p-1 transition">
+                    <img src="../../resources/svg/back-arrow-rounded.svg" alt="Back" class="w-8 h-8">
+                </button>
+                <div>
+                    <h2 class="text-2xl font-bold text-[#1E1E1E]">Sentiment Analysis Report</h2>
+                    <p id="report-subtitle" class="text-gray-600">Viewing report details</p>
+                </div>
+            </div>
+            <a id="download-report-btn" href="#" target="_blank" class="bg-[#064089] text-white px-4 py-2 rounded shadow hover:bg-blue-800 transition flex items-center gap-2">
+                <img src="../../resources/svg/download-outline.svg" alt="" class="w-4 h-4 filter invert"> Download PDF
+            </a>
+        </div>
+        <div id="sentiment-report-content" class="flex-grow border border-gray-300 rounded-lg bg-gray-100 relative h-[80vh]">
+            <!-- PDF Object -->
+        </div>
     </div>
 
     <!-- Upload CSV Dialog -->

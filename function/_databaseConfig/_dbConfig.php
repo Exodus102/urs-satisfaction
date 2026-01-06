@@ -3,7 +3,7 @@
 // IMPORTANT: Replace these with your actual database credentials.
 // For production, consider using environment variables or a more secure config file.
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'urs_satisfaction');
+define('DB_NAME', 'db_css');
 define('DB_USER', 'root');
 define('DB_PASS', ''); // Your database password
 
