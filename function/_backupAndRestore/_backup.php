@@ -10,12 +10,20 @@ require_once __DIR__ . '/../_auditTrail/_audit.php'; // Include the audit trail 
 // --- Configuration ---
 // IMPORTANT: Update this path to your mysqldump.exe if it's not in your system's PATH
 // Common XAMPP path: 'C:\xampp\mysql\bin\mysqldump.exe'
-$mysqldumpPath = 'C:\xampp\mysql\bin\mysqldump.exe';
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $mysqldumpPath = 'C:\xampp\mysql\bin\mysqldump.exe';
+} else {
+    $mysqldumpPath = 'mysqldump';
+}
 
 $rawBackupDir = __DIR__ . '/../../upload/backups/';
 
 // --- Main Logic ---
 try {
+    if (!function_exists('exec')) {
+        throw new Exception("The 'exec' function is disabled on this server.");
+    }
+
     // 1. Determine the next version number
     $stmt = $pdo->query("SELECT version FROM tbl_backup ORDER BY id DESC LIMIT 1");
     $latestVersion = $stmt->fetchColumn();

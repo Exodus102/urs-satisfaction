@@ -17,10 +17,18 @@ if (!$backupId) {
 // --- Configuration ---
 // IMPORTANT: Update this path to your mysql.exe if it's not in your system's PATH
 // Common XAMPP path: 'C:\xampp\mysql\bin\mysql.exe'
-$mysqlPath = 'C:\xampp\mysql\bin\mysql.exe';
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $mysqlPath = 'C:\xampp\mysql\bin\mysql.exe';
+} else {
+    $mysqlPath = 'mysql';
+}
 
 // --- Main Logic ---
 try {
+    if (!function_exists('exec')) {
+        throw new Exception("The 'exec' function is disabled on this server.");
+    }
+
     // 1. Get the file path from the database
     $stmt = $pdo->prepare("SELECT file_path FROM tbl_backup WHERE id = ?");
     $stmt->execute([$backupId]);

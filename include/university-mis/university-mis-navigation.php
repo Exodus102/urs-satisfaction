@@ -150,7 +150,7 @@ $base_class = 'group font-bold px-4 py-1 text-base rounded-md transition-colors 
             </a>
         </li>
         <li>
-            <a href="university-mis-layout.php?page=entity-management-mis" class="<?php echo $base_class; ?> <?php echo ($page === 'entity-management') ? $active_class : $inactive_class; ?>">
+            <a href="university-mis-layout.php?page=entity-management-mis" class="<?php echo $base_class; ?> <?php echo ($page === 'entity-management-mis') ? $active_class : $inactive_class; ?>">
                 <svg class="nav-icon" width="19" height="18" viewBox="0 0 19 18" xmlns="http://www.w3.org/2000/svg">
                     <path class="fill-current" d="M3.25 0.25C1.86929 0.25 0.75 1.36929 0.75 2.75V5.25C0.75 6.63071 1.86929 7.75 3.25 7.75H5.75C7.13071 7.75 8.25 6.63071 8.25 5.25V2.75C8.25 1.36929 7.13071 0.25 5.75 0.25H3.25Z" />
                     <path class="fill-current" d="M3.25 10.25C1.86929 10.25 0.75 11.3693 0.75 12.75V15.25C0.75 16.6307 1.86929 17.75 3.25 17.75H5.75C7.13071 17.75 8.25 16.6307 8.25 15.25V12.75C8.25 11.3693 7.13071 10.25 5.75 10.25H3.25Z" />

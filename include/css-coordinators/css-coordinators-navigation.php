@@ -119,7 +119,7 @@ $base_class = 'group font-bold px-4 py-1 text-base rounded-md transition-colors 
                 QR Code
             </a>
         </li>
-        <li>
+        <!--<li>
             <a href="css-coordinators-layout.php?page=backup-and-restore" class="<?php echo $base_class; ?> <?php echo ($page === 'backup-and-restore') ? $active_class : $inactive_class; ?>">
                 <svg class="nav-icon" width="21" height="22" viewBox="0 0 21 22" xmlns="http://www.w3.org/2000/svg">
                     <path class="fill-current" d="M3.20825 13.083C2.93198 13.083 2.66703 13.1928 2.47168 13.3881C2.27633 
@@ -162,7 +162,7 @@ $base_class = 'group font-bold px-4 py-1 text-base rounded-md transition-colors 
                 </svg>
                 Backup & Restore
             </a>
-        </li>
+        </li>-->
         <li>
             <a href="css-coordinators-layout.php?page=display" class="<?php echo $base_class; ?> <?php echo ($page === 'display') ? $active_class : $inactive_class; ?>">
                 <svg class="nav-icon" width="25" height="26" viewBox="0 0 25 26" xmlns="http://www.w3.org/2000/svg">
