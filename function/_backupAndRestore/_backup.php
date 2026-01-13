@@ -7,23 +7,15 @@ require_once __DIR__ . '/../_databaseConfig/_dbConfig.php';
 
 require_once __DIR__ . '/../_auditTrail/_audit.php'; // Include the audit trail function
 
-// --- Configuration ---
-// IMPORTANT: Update this path to your mysqldump.exe if it's not in your system's PATH
-// Common XAMPP path: 'C:\xampp\mysql\bin\mysqldump.exe'
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    $mysqldumpPath = 'C:\xampp\mysql\bin\mysqldump.exe';
-} else {
-    $mysqldumpPath = 'mysqldump';
-}
+// Include Composer's autoloader to load ifsnop/mysqldump-php
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Ifsnop\Mysqldump\Mysqldump;
 
 $rawBackupDir = __DIR__ . '/../../upload/backups/';
 
 // --- Main Logic ---
 try {
-    if (!function_exists('exec')) {
-        throw new Exception("The 'exec' function is disabled on this server.");
-    }
-
     // 1. Determine the next version number
     $stmt = $pdo->query("SELECT version FROM tbl_backup ORDER BY id DESC LIMIT 1");
     $latestVersion = $stmt->fetchColumn();
@@ -63,24 +55,16 @@ try {
 
     $backupFilePath = $backupDir . $backupFile;
 
-    // Construct the mysqldump command
-    // Using escapeshellarg to prevent command injection and 2>&1 to capture errors
-    $command = sprintf(
-        '%s --host=%s --user=%s --password=%s %s > %s 2>&1',
-        $mysqldumpPath,
-        escapeshellarg(DB_HOST),
-        escapeshellarg(DB_USER),
-        escapeshellarg(DB_PASS),
-        escapeshellarg(DB_NAME),
-        escapeshellarg($backupFilePath)
-    );
-
-    // Execute the command
-    exec($command, $output, $return_var);
-
-    // Check if the command was successful
-    if ($return_var !== 0) {
-        throw new Exception("mysqldump failed. Return code: $return_var. Output: " . implode("\n", $output));
+    // 3. Perform Backup using ifsnop/mysqldump-php
+    if (class_exists('Ifsnop\Mysqldump\Mysqldump')) {
+        $dumpSettings = [
+            'add-drop-table' => true, // This is the key change to fix the restore error
+            'single-transaction' => true // Recommended for InnoDB tables to ensure a consistent state
+        ];
+        $dump = new Mysqldump('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS, $dumpSettings);
+        $dump->start($backupFilePath);
+    } else {
+        throw new Exception("The 'ifsnop/mysqldump-php' library is not installed. Please run 'composer require ifsnop/mysqldump-php'.");
     }
 
     // Get file size and format it

@@ -5,6 +5,8 @@ header('Content-Type: application/json');
 // Use the existing database configuration - Corrected Path
 require_once __DIR__ . '/../_databaseConfig/_dbConfig.php';
 
+require_once __DIR__ . '/../_auditTrail/_audit.php'; // Include the audit trail function
+
 $data = json_decode(file_get_contents('php://input'), true);
 $backupId = $data['backup_id'] ?? null;
 
@@ -14,21 +16,10 @@ if (!$backupId) {
     exit;
 }
 
-// --- Configuration ---
-// IMPORTANT: Update this path to your mysql.exe if it's not in your system's PATH
-// Common XAMPP path: 'C:\xampp\mysql\bin\mysql.exe'
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    $mysqlPath = 'C:\xampp\mysql\bin\mysql.exe';
-} else {
-    $mysqlPath = 'mysql';
-}
-
 // --- Main Logic ---
 try {
-    if (!function_exists('exec')) {
-        throw new Exception("The 'exec' function is disabled on this server.");
-    }
-
+    // Increase execution time for large restores
+    set_time_limit(0);
     // 1. Get the file path from the database
     $stmt = $pdo->prepare("SELECT file_path FROM tbl_backup WHERE id = ?");
     $stmt->execute([$backupId]);
@@ -38,24 +29,34 @@ try {
         throw new Exception("Backup file not found for ID: $backupId. It may have been moved or deleted.");
     }
 
-    // 2. Construct the mysql import command
-    $command = sprintf(
-        '%s --host=%s --user=%s --password=%s %s < %s 2>&1',
-        $mysqlPath,
-        escapeshellarg(DB_HOST),
-        escapeshellarg(DB_USER),
-        escapeshellarg(DB_PASS),
-        escapeshellarg(DB_NAME),
-        escapeshellarg($backupFilePath)
-    );
+    // 2. PHP-based SQL Restore (No exec() required)
+    $pdo->exec('SET FOREIGN_KEY_CHECKS = 0'); // Disable FK checks to prevent errors during restore
 
-    // 3. Execute the command
-    exec($command, $output, $return_var);
+    $handle = fopen($backupFilePath, "r");
+    if ($handle) {
+        $query = '';
+        while (($line = fgets($handle)) !== false) {
+            $trimLine = trim($line);
+            // Skip empty lines and comments
+            if ($trimLine === '' || strpos($trimLine, '--') === 0 || strpos($trimLine, '#') === 0) {
+                continue;
+            }
 
-    // 4. Check for success
-    if ($return_var !== 0) {
-        throw new Exception("mysql import failed. Return code: $return_var. Output: " . implode("\n", $output));
+            $query .= $line;
+            // If the line ends with a semicolon, execute the query
+            if (substr(rtrim($line), -1) === ';') {
+                $pdo->exec($query);
+                $query = '';
+            }
+        }
+        fclose($handle);
+    } else {
+        throw new Exception("Could not open backup file for reading.");
     }
+    $pdo->exec('SET FOREIGN_KEY_CHECKS = 1'); // Re-enable FK checks
+
+    // --- LOG THE ACTION TO THE AUDIT TRAIL ---
+    log_audit_trail($pdo, "Restored database from backup ID: " . $backupId);
 
     echo json_encode(['success' => true, 'message' => 'Database restored successfully!']);
 } catch (Exception $e) {
